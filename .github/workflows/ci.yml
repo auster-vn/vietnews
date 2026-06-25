@@ -47,13 +47,6 @@ jobs:
           cd renderer
           npm install
 
-      - name: Download font assets
-        run: |
-          cd renderer
-          mkdir -p fonts
-          curl -L -o fonts/Inter-Regular.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf
-          curl -L -o fonts/Inter-Bold.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf
-
       - name: Run Vitest
         run: |
           cd renderer
