@@ -20,16 +20,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version-file: "vietnews/backend/pyproject.toml"
+          python-version-file: "backend/pyproject.toml"
 
       - name: Sync dependencies
         run: |
-          cd vietnews/backend
+          cd backend
           uv sync
 
       - name: Run Pytest
         run: |
-          cd vietnews/backend
+          cd backend
           PYTHONPATH=.. uv run pytest tests/ -v
 
   renderer-tests:
@@ -40,23 +40,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: |
-          cd vietnews/renderer
+          cd renderer
           npm install
 
       - name: Download font assets
         run: |
-          cd vietnews/renderer
+          cd renderer
           mkdir -p fonts
           curl -L -o fonts/Inter-Regular.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf
           curl -L -o fonts/Inter-Bold.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf
 
       - name: Run Vitest
         run: |
-          cd vietnews/renderer
+          cd renderer
           npm run test
 
   frontend-tests:
@@ -67,14 +67,14 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: |
-          cd vietnews/frontend
+          cd frontend
           npm install
 
       - name: Run Vitest
         run: |
-          cd vietnews/frontend
+          cd frontend
           npm run test
