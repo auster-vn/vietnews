@@ -1,220 +1,183 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
-<a id="readme-top"></a>
+# VietNews 📰
+> **An Automated Real-Time Hot News Aggregator & Infographics Generation Pipeline.**
 
-<!-- PROJECT SHIELDS -->
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![MIT License][license-shield]][license-url]
+[![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vietnews-seven.vercel.app/)
+[![Python Version](https://img.shields.io/badge/Python-3.12%2B-blue?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Node Version](https://img.shields.io/badge/Node.js-18%2B-green?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Docker Support](https://img.shields.io/badge/Docker-Supported-blue?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
-<!-- PROJECT LOGO -->
-<br />
-<div align="center">
-  <a href="https://github.com/auster-vn/vietnews">
-    <!-- <img src="frontend/public/logo.png" alt="Logo" width="80" height="80"> -->
-  </a>
+**Live Demo**: [https://vietnews-seven.vercel.app/](https://vietnews-seven.vercel.app/)
 
-  <h3 align="center">VietNews</h3>
+---
 
-  <p align="center">
-    Hệ thống bản tin nóng tự động và vận hành dashboard thông minh thời gian thực.
-    <br />
-    <a href="https://github.com/auster-vn/vietnews"><strong>Khám phá tài liệu »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/auster-vn/vietnews/issues/new?labels=bug&template=bug-report---.md">Báo cáo Lỗi</a>
-    ·
-    <a href="https://github.com/auster-vn/vietnews/issues/new?labels=enhancement&template=feature-request---.md">Yêu cầu Tính năng</a>
-  </p>
-</div>
+## 📖 Introduction
+**VietNews** is a full-stack, automated data engineering and visualization pipeline that scrapes major news streams (like VietnamPlus), filters and ranks stories using an algorithmic **Hot Score**, dynamically renders custom vector news infographics using **Node.js Satori**, and hosts a premium real-time operations dashboard for cross-device viewing.
 
-<!-- TABLE OF CONTENTS -->
-<details>
-  <summary>Mục Lục</summary>
-  <ol>
-    <li>
-      <a href="#about-the-project">Giới thiệu Dự án</a>
-      <ul>
-        <li><a href="#built-with">Công nghệ sử dụng</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Bắt đầu</a>
-      <ul>
-        <li><a href="#prerequisites">Yêu cầu hệ thống</a></li>
-        <li><a href="#installation">Cài đặt</a></li>
-      </ul>
-    </li>
-    <li><a href="#architecture">Kiến trúc</a></li>
-    <li><a href="#usage">Sử dụng</a></li>
-    <li><a href="#contributing">Đóng góp</a></li>
-    <li><a href="#license">Giấy phép</a></li>
-    <li><a href="#contact">Liên hệ</a></li>
-  </ol>
-</details>
+### 🌟 Key Features
+- **High-Performance Crawler & ETL:** Uses Python's `Selectolax` parser to scrape articles efficiently, utilizing Redis Cloud cache to prevent duplicate content ingestion.
+- **Hot Score Engine:** Ranks articles algorithmically from `0` to `100` based on category urgency, temporal decay, and headline density.
+- **Dynamic Infographics Renderer:** Uses React templates compiled by Node.js/TypeScript `Satori` to produce high-resolution, lightweight SVG-to-PNG visual assets.
+- **Cloud Storage Sync:** Seamlessly uploads rendered news cards to `Cloudinary CDN`.
+- **Hybrid Preview Architecture:** Supports high-fidelity live CSS rendering of the cards on the client-side for optimization alongside static PNG fallback options.
+- **Premium Multi-Device UI:**
+  - **Desktop**: Real-time split-screen Operations Dashboard with metrics overview, automatic autoplay scanner, zoomable lightbox modal, and rapid filter/search drawers.
+  - **Mobile**: Intuitive Tinder-style swipe interface for quick news scanning.
 
-<!-- ABOUT THE PROJECT -->
-## About The Project
+---
 
-VietNews là một hệ thống tự động cào, xử lý, phân loại tin tức thời gian thực và tự động tạo ảnh thẻ tóm tắt (infographics/news card graphics) chất lượng cao. Hệ thống giám sát vận hành tin tức vietnamplus.vn, tính toán mức độ nóng (hot score) của các sự kiện chính trị, kinh tế, xã hội, khoa học, và hiển thị trực quan thông qua giao diện đa nền tảng hiện đại.
+## 📐 System Architecture
 
-### Công dụng (Use Cases)
-* **Cào tin tức hiệu năng cao (Automated Ingestion):** Parser tối ưu sử dụng thư viện Selectolax trong Python để bóc tách vietnamplus.vn một cách tin cậy và không trùng lặp nhờ cache Redis Cloud.
-* **ETL Pipeline & Classifier:** Chuẩn hóa dữ liệu văn bản thô, tự động nhận diện danh mục chính xác và tính toán điểm tin nóng `hot_score` (từ 0 đến 100) đại diện cho độ thịnh hành và tầm quan trọng của tin tức.
-* **Dựng ảnh thẻ tự động (Vector-to-PNG Renderer):** Sử dụng Node.js Satori kết hợp Resvg để chuyển đổi templates React JSX thành ảnh vector SVG và render ra file PNG độ phân giải cao, sau đó đồng bộ hóa và phân phối thông qua Cloudinary.
-* **Giao diện đa nền tảng mượt mà:**
-  * **Mobile:** Trải nghiệm vuốt (swipe) đọc tin tức phong cách Tinder độc đáo, tối ưu hóa kích thước hình ảnh và cử chỉ kéo thả.
-  * **Desktop:** Dashboard quản lý vận hành split-screen, tích hợp biểu đồ metrics tổng quan, danh sách cuộn nhanh sidebar, thanh công cụ autoplay tự động chuyển tin, và khả năng zoom lightbox xem chi tiết infographic.
-* **Vận hành linh hoạt:** Tích hợp cả chế độ render live bằng client-side React replica siêu mượt và chế độ hiển thị ảnh PNG tĩnh tối ưu hóa băng thông.
+The following diagram illustrates how data flows from the scraper, through the database layers and the image renderer, to the user's dashboard.
 
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
+```mermaid
+graph TD
+    %% Scraper & Pipeline%%
+    VP[VietnamPlus.vn] -->|Scrape HTML| ETL[Python ETL Scraper]
+    Redis[(Redis Cloud Cache)] <-->|Check Duplicates| ETL
+    ETL -->|Calculate Hot Score| DB[(Neon PostgreSQL)]
+    
+    %% Renderer %%
+    DB -->|Fetch Unrendered Articles| Render[Node.js Satori Renderer]
+    Render -->|Render JSX to PNG| Cloudinary[Cloudinary CDN]
+    Cloudinary -->|Save Image URL| DB
+    
+    %% API & Clients %%
+    DB -->|Data Endpoint| API[FastAPI Gateway]
+    API -->|Fetch JSON Feed| Next[Next.js Client]
+    
+    classDef main fill:#3b82f6,stroke:#1d4ed8,color:#fff;
+    classDef storage fill:#10b981,stroke:#047857,color:#fff;
+    classDef client fill:#8b5cf6,stroke:#6d28d9,color:#fff;
+    
+    class ETL,Render main;
+    class DB,Redis,Cloudinary storage;
+    class Next client;
+```
 
-### Built With
+---
 
-* [![Next][Next.js]][Next-url]
-* [![React][React.js]][React-url]
-* [![FastAPI][FastAPI]][FastAPI-url]
-* [![PostgreSQL][PostgreSQL]][PostgreSQL-url]
-* [![Redis][Redis]][Redis-url]
-* [![Docker][Docker]][Docker-url]
+## 🛠️ Technology Stack
 
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
+- **Frontend:** Next.js (TypeScript, TailwindCSS, Framer Motion)
+- **Backend:** FastAPI (Python, Uvicorn, APScheduler)
+- **Renderer Engine:** Node.js (TypeScript, Satori, Resvg)
+- **Databases:** Neon PostgreSQL, Redis Cloud
+- **Media Delivery:** Cloudinary CDN
 
-<!-- GETTING STARTED -->
-## Getting Started
+---
 
-Để có thể chạy dự án local hoặc triển khai trên các platform hosting miễn phí, hãy làm theo hướng dẫn dưới đây.
+## 🚀 Getting Started
+
+Follow these steps to run a copy of the project locally or deploy it to production.
 
 ### Prerequisites
+Make sure you have installed:
+- **Python** $\ge 3.12$ (using `uv` package manager is highly recommended)
+- **Node.js** $\ge 18$ & npm
+- A PostgreSQL database (Neon Postgres free instance recommended)
+- A Redis instance (Redis Cloud free instance recommended)
+- A Cloudinary account (Free tier)
 
-Hệ thống yêu cầu cài đặt:
-* Python >= 3.12 (đề xuất sử dụng `uv` quản lý gói nhanh chóng)
-* Node.js >= 18 & npm
-* Cơ sở dữ liệu PostgreSQL (hoặc dùng tài khoản Neon Postgres miễn phí)
-* Redis Server (hoặc dùng Redis Cloud miễn phí)
+---
 
-### Installation
+### Installation & Local Setup
 
-1. Lấy API Key từ [Cloudinary](https://cloudinary.com/).
-2. Clone repository:
-   ```sh
+1. **Clone the Repository:**
+   ```bash
    git clone https://github.com/auster-vn/vietnews.git
    cd vietnews
    ```
-3. Cài đặt các gói phụ thuộc:
-   * **Backend (Python FastAPI):**
-     ```sh
-     cd backend
-     uv pip install -r requirements.txt
-     ```
-   * **Frontend (Next.js):**
-     ```sh
-     cd ../frontend
-     npm install
-     ```
-   * **Renderer (Node.js Satori):**
-     ```sh
-     cd ../renderer
-     npm install
-     ```
-4. Cấu hình biến môi trường `.env` ở thư mục gốc:
+
+2. **Configure Environment Variables:**
+   Create a `.env` file in the root folder of the project:
    ```env
-   # Database & Cache Connection
+   # Neon Postgres DB
    NEON_DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
-   REDIS_HOST=your-redis-host
-   REDIS_PORT=6379
-   REDIS_PASSWORD=your-redis-password
    
-   # Cloudinary config (For image renderer uploading)
+   # Redis Cache
+   REDIS_HOST=your-redis-host.db.redis.io
+   REDIS_PORT=16444
+   REDIS_PASSWORD=your-redis-password
+
+   # Cloudinary Media Storage
    CLOUDINARY_CLOUD_NAME=your-cloud-name
    CLOUDINARY_API_KEY=your-api-key
    CLOUDINARY_API_SECRET=your-api-secret
-   
-   # API Configuration
+
+   # API Gateways & Credentials
    NEXT_PUBLIC_API_URL=http://localhost:8000
-   INTERNAL_CRON_SECRET=your-internal-cron-secret
+   INTERNAL_CRON_SECRET=your-secure-cron-secret
    ```
-5. Chạy database migrations (Khởi tạo bảng):
-   ```sh
+
+3. **Install Dependencies & Build Components:**
+   * **Backend & Scraper:**
+     ```bash
+     cd backend
+     uv pip install -r requirements.txt
+     ```
+   * **Renderer Engine:**
+     ```bash
+     cd ../renderer
+     npm install
+     npm run build
+     ```
+   * **Frontend Application:**
+     ```bash
+     cd ../frontend
+     npm install
+     ```
+
+4. **Initialize Database Tables:**
+   Run migrations to create the necessary tables in your Postgres database:
+   ```bash
    cd ../backend
-   python -m backend.src.db.migrations
+   PYTHONPATH=.. uv run python src/db/migrations.py
    ```
 
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
+5. **Run Locally:**
+   * **Start Backend Server:**
+     ```bash
+     cd ../backend
+     PYTHONPATH=. uv run uvicorn src.api.main:app --port 8000 --reload
+     ```
+   * **Start Frontend Server:**
+     ```bash
+     cd ../frontend
+     npm run dev
+     ```
 
-<!-- ARCHITECTURE -->
-## Kiến trúc
+---
 
-Hệ thống VietNews được chia thành các cấu phần module tách biệt giúp dễ dàng triển khai độc lập trên các hosting miễn phí (như Vercel cho Next.js, Render/Railway/Fly.io cho FastAPI và Node.js Renderer):
+## ☁️ Deployment Guide
 
-1. **Scraper & ETL pipeline (Python backend):** Thực hiện định kỳ bóc tách dữ liệu từ VietnamPlus, xử lý làm sạch, phân loại và lưu trữ vào Postgres.
-2. **Database Layer (Neon Postgres & Redis Cloud):** Lưu trữ dữ liệu dạng quan hệ bền vững (Postgres) và kiểm soát tin tức trùng lặp tốc độ cao (Redis).
-3. **Card Renderer (Node.js/Satori):** API Server nhận dữ liệu bài viết từ Backend, biên dịch JSX thành SVG, kết xuất ảnh PNG tĩnh và tải lên Cloudinary CDN.
-4. **API Gateway (FastAPI):** Endpoint RESTful cung cấp danh sách tin tức, bộ lọc, tìm kiếm và kích hoạt cào tin thủ công bảo mật bằng `INTERNAL_CRON_SECRET`.
-5. **Web Client (Next.js):** Giao diện UI/UX tương tác thời gian thực, đáp ứng thiết bị di động và các màn hình vận hành dashboard.
+VietNews is designed to run completely on **Free Tiers** without exceeding limits:
 
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
+### 1. Backend & Satori Renderer (Render.com)
+Deploy both components in a single container using our unified root [Dockerfile](file:///home/cp/Documents/Feed/vietnews/Dockerfile):
+- Create a new **Web Service** on Render and select **Docker** runtime.
+- Connect your GitHub Repository.
+- In **Environment Variables**, paste all credentials from the `.env` file.
+- Spin up on the **Free Instance** (costs $0/month).
 
-<!-- USAGE -->
-## Usage
+### 2. Frontend Next.js Dashboard (Vercel)
+- Create a new project on Vercel and import your repository.
+- Edit the **Root Directory** settings to point to **`frontend`**.
+- Add the environment variable:
+  - `NEXT_PUBLIC_API_URL` = URL of your Render backend.
+- Deploy.
 
-Hoạt động mặc định của các dịch vụ chạy local:
-* **Frontend Dashboard Web UI:** `http://localhost:3000`
-* **Backend REST API (Swagger Docs):** `http://localhost:8000/docs`
-* **Node.js Card Renderer Server:** Chạy mặc định phục vụ render ảnh PNG tĩnh qua API nội bộ.
+### 3. Setup Automation Trigger (cron-job.org)
+To prevent the Render free tier from sleeping and trigger data crawls every 6 hours:
+- Register on [cron-job.org](https://cron-job.org/) and create a new cronjob.
+- Set the target URL to: `https://your-render-backend-url.onrender.com/internal/crawl`
+- Set execution schedule to: **Every 6 hours** (`0 */6 * * *`).
+- In **Advanced Settings**, set **Request Method** to `POST`.
+- Add a Header:
+  - **Key**: `X-Cron-Token`
+  - **Value**: Value of your `INTERNAL_CRON_SECRET`.
 
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
+---
 
-<!-- CONTRIBUTING -->
-## Contributing
-
-Đóng góp mã nguồn giúp cộng đồng mã nguồn mở trở nên tốt hơn là điều tuyệt vời. Mọi đóng góp của bạn đều được **ghi nhận và trân trọng**.
-
-1. Fork Dự án
-2. Tạo Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit những thay đổi (`git commit -m 'Add some AmazingFeature'`)
-4. Push lên Branch (`git push origin feature/AmazingFeature`)
-5. Tạo Pull Request
-
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
-<!-- LICENSE -->
-## License
-
-Phân phối dưới giấy phép MIT. Xem thêm thông tin chi tiết tại kho lưu trữ.
-
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
-<!-- CONTACT -->
-## Contact
-
-Auster VN - [@auster_vn](https://auster-vn.github.io/#contact)
-
-Project Link: [https://github.com/auster-vn/vietnews](https://github.com/auster-vn/vietnews)
-
-<p align="right">(<a href="#readme-top">quay lại đầu trang</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-[contributors-shield]: https://img.shields.io/github/contributors/auster-vn/vietnews.svg?style=for-the-badge
-[contributors-url]: https://github.com/auster-vn/vietnews/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/auster-vn/vietnews.svg?style=for-the-badge
-[forks-url]: https://github.com/auster-vn/vietnews/network/members
-[stars-shield]: https://img.shields.io/github/stars/auster-vn/vietnews.svg?style=for-the-badge
-[stars-url]: https://github.com/auster-vn/vietnews/stargazers
-[issues-shield]: https://img.shields.io/github/issues/auster-vn/vietnews.svg?style=for-the-badge
-[issues-url]: https://github.com/auster-vn/vietnews/issues
-[license-shield]: https://img.shields.io/github/license/auster-vn/vietnews.svg?style=for-the-badge
-
-[Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
-[Next-url]: https://nextjs.org/
-[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
-[React-url]: https://reactjs.org/
-[FastAPI]: https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white
-[FastAPI-url]: https://fastapi.tiangolo.com/
-[PostgreSQL]: https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white
-[PostgreSQL-url]: https://www.postgresql.org/
-[Redis]: https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white
-[Redis-url]: https://redis.io/
-[Docker]: https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white
-[Docker-url]: https://www.docker.com/
+## 📜 License
+Distributed under the MIT License. See `LICENSE` for details.
