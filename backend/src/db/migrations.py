@@ -1,6 +1,10 @@
 import os
 import psycopg2
 import sys
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 def run_migrations():
     db_url = os.getenv("NEON_DATABASE_URL", "")

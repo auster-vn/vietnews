@@ -5,6 +5,11 @@ import subprocess
 import httpx
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from backend.src.db.neon import NeonDBClient
 from backend.src.api.scheduler import start_scheduler, shutdown_scheduler, run_crawl_and_render
 from backend.src.scraper.vietnamplus import VietnamPlusScraper
