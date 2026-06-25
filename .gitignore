@@ -57,3 +57,7 @@ scratch_homepage.html
 # OS files
 .DS_Store
 Thumbs.db
+
+# Markdown documentation files (exclude all except README.md)
+**/*.md
+!**/README.md
