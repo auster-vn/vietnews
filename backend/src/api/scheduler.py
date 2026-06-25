@@ -35,7 +35,7 @@ def run_crawl_and_render():
 
 def start_scheduler():
     if not scheduler.running:
-        scheduler.add_job(run_crawl_and_render, 'interval', hours=3, id='crawl_job')
+        scheduler.add_job(run_crawl_and_render, 'interval', hours=6, id='crawl_job')
         scheduler.start()
         logger.info("Background scheduler started successfully.")
 
