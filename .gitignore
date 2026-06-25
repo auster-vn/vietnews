@@ -61,3 +61,6 @@ Thumbs.db
 # Markdown documentation files (exclude all except README.md)
 **/*.md
 !**/README.md
+
+# Agent and workspace files
+.agents/
