@@ -1,0 +1,80 @@
+name: VietNews CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "vietnews/backend/pyproject.toml"
+
+      - name: Sync dependencies
+        run: |
+          cd vietnews/backend
+          uv sync
+
+      - name: Run Pytest
+        run: |
+          cd vietnews/backend
+          PYTHONPATH=.. uv run pytest tests/ -v
+
+  renderer-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          cd vietnews/renderer
+          npm install
+
+      - name: Download font assets
+        run: |
+          cd vietnews/renderer
+          mkdir -p fonts
+          curl -L -o fonts/Inter-Regular.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.ttf
+          curl -L -o fonts/Inter-Bold.ttf https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.ttf
+
+      - name: Run Vitest
+        run: |
+          cd vietnews/renderer
+          npm run test
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: |
+          cd vietnews/frontend
+          npm install
+
+      - name: Run Vitest
+        run: |
+          cd vietnews/frontend
+          npm run test
