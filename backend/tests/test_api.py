@@ -92,6 +92,9 @@ def test_post_crawl_now_success(client, mock_db, mocker):
     }
     mock_db.get_article_by_url.side_effect = [None, mock_article_not_rendered, mock_article_rendered]
     
+    # Mock os.path.exists to return True for the renderer path
+    mocker.patch("os.path.exists", return_value=True)
+
     # Mock subprocess run to simulate successful node rendering
     mock_sub = mocker.patch("subprocess.run")
     mock_sub.return_value = MagicMock(returncode=0)
@@ -116,6 +119,9 @@ def test_post_crawl_hot_now_success(client, mock_db, mocker):
     mock_pipeline = MagicMock()
     mock_pipeline.run.return_value = 5
     mocker.patch("backend.src.api.main.ETLPipeline", return_value=mock_pipeline)
+
+    # Mock os.path.exists to return True for the renderer path
+    mocker.patch("os.path.exists", return_value=True)
 
     # Mock subprocess run to simulate rendering
     mock_sub = mocker.patch("subprocess.run")
