@@ -20,6 +20,13 @@ export default function NewsMeta({
   hotScore,
   isPortrait = true
 }: NewsMetaProps) {
+  // Dynamic font size scaling based on length to prevent clipping and fit long titles
+  const getTitleSize = (text: string) => {
+    if (text.length > 80) return 'text-[16px] sm:text-[20px]';
+    if (text.length > 55) return 'text-[19px] sm:text-[23px]';
+    return 'text-[23px] sm:text-[28px]';
+  };
+
   return (
     <div className={`flex flex-col select-none text-left ${isPortrait ? 'gap-2 mb-3' : 'gap-3 mt-4 mb-3'}`}>
       
@@ -43,22 +50,9 @@ export default function NewsMeta({
       </div>
 
       {/* Headline */}
-      <h2 
-        className={`font-black leading-tight tracking-tight text-white uppercase line-clamp-2 ${
-          isPortrait ? 'text-[24px] sm:text-[28px]' : 'text-[26px] sm:text-[32px]'
-        }`}
-      >
+      <h2 className={`font-black leading-tight tracking-tight text-white uppercase ${getTitleSize(title)}`}>
         {title}
       </h2>
-
-      {/* Summary / Subtitle */}
-      <p 
-        className={`font-medium text-[#B8B8B8] leading-relaxed line-clamp-2 ${
-          isPortrait ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'
-        }`}
-      >
-        {summary}
-      </p>
     </div>
   );
 }

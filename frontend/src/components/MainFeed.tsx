@@ -374,21 +374,19 @@ export default function MainFeed({ initialArticles, initialBannerArticles }: Mai
   const renderMobileViewport = () => {
     return (
       <div className="relative w-full h-full flex flex-col justify-between overflow-hidden bg-[#0E0E10] text-white">
-        {/* Floating Header */}
-        <Header />
+        {/* Floating Header with Category Selection */}
+        <Header 
+          selectedCategory={selectedCategory}
+          onSelectCategory={(cat) => {
+            setSelectedCategory(cat);
+            setAutoplay(false);
+          }}
+          isMobileView={true}
+        />
 
         {/* Content Area - Lock heights and clear floating header */}
         <div className="flex-grow flex flex-col pt-[68px] pb-4 h-full justify-between overflow-hidden">
           
-          {/* Category Tabs */}
-          <CategoryTabs 
-            selectedCategory={selectedCategory} 
-            onSelectCategory={(cat) => {
-              setSelectedCategory(cat);
-              setAutoplay(false);
-            }} 
-          />
-
           {/* Swipe Card viewport - occupies 85-90% of screen spacing */}
           <div className="flex-grow flex items-center justify-center relative px-3 my-2 min-h-0 overflow-hidden">
             {activeArticle ? (
