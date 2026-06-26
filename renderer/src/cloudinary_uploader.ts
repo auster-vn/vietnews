@@ -37,7 +37,7 @@ export async function uploadBuffer(buffer: Buffer): Promise<string> {
  * Connects to Neon Postgres (or local JSON DB), fetches unrendered high-scoring articles, 
  * generates images for them, uploads to Cloudinary (or saves locally), and updates their DB records.
  */
-export async function processUnrenderedArticles(limit: number = 20): Promise<number> {
+export async function processUnrenderedArticles(limit: number = 5): Promise<number> {
   const dbUrl = process.env.NEON_DATABASE_URL;
   if (!dbUrl) {
     console.log('NEON_DATABASE_URL is missing. Using local JSON database mode.');
@@ -52,9 +52,9 @@ export async function processUnrenderedArticles(limit: number = 20): Promise<num
     const fileContent = fs.readFileSync(jsonPath, 'utf-8');
     const data: any[] = JSON.parse(fileContent);
     
-    // Select unrendered articles
+    // Select unrendered articles (hot ones only)
     const unrendered = data
-      .filter(item => !item.is_rendered)
+      .filter(item => !item.is_rendered && (item.hot_score || 0) >= 60)
       .sort((a, b) => (b.hot_score || 0) - (a.hot_score || 0))
       .slice(0, limit);
       
@@ -108,11 +108,11 @@ export async function processUnrenderedArticles(limit: number = 20): Promise<num
   await client.connect();
 
   try {
-    // Select articles needing image rendering
+    // Select articles needing image rendering (hot ones only)
     const res = await client.query(
       `SELECT id, title, summary, category, thumbnail_url, hot_score, published_at 
        FROM articles 
-       WHERE is_rendered = FALSE 
+       WHERE is_rendered = FALSE AND hot_score >= 60
        ORDER BY hot_score DESC, created_at DESC 
        LIMIT $1`,
       [limit]

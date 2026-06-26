@@ -2,13 +2,13 @@ import React from 'react';
 import { Article } from '@/components/Banner';
 import MainFeed from '@/components/MainFeed';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300; // Cache and revalidate every 5 minutes
 
 async function getArticles(): Promise<Article[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   try {
     const res = await fetch(`${apiUrl}/api/articles?limit=50`, {
-      cache: 'no-store'
+      next: { revalidate: 300 }
     });
     if (!res.ok) return [];
     return await res.json();
@@ -22,7 +22,7 @@ async function getBannerArticles(): Promise<Article[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   try {
     const res = await fetch(`${apiUrl}/api/banner`, {
-      cache: 'no-store'
+      next: { revalidate: 300 }
     });
     if (!res.ok) return [];
     return await res.json();

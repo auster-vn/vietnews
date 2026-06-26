@@ -14,7 +14,7 @@ async function main() {
       process.exit(1);
     }
   } else {
-    const count = await processUnrenderedArticles(20);
+    const count = await processUnrenderedArticles(5);
     console.log(`Rendered and uploaded ${count} articles.`);
     process.exit(0);
   }

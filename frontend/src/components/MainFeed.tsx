@@ -236,6 +236,34 @@ export default function MainFeed({ initialArticles, initialBannerArticles }: Mai
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiUrl}/api/articles?limit=50`);
+        if (res.ok) {
+          const freshArticles: Article[] = await res.json();
+          if (freshArticles && freshArticles.length > 0) {
+            setArticles(freshArticles);
+            
+            // Silently check if the banner articles have changed
+            const resBanner = await fetch(`${apiUrl}/api/banner`);
+            if (resBanner.ok) {
+              const freshBanner: Article[] = await resBanner.json();
+              setBannerArticles(freshBanner.length > 0 ? freshBanner : freshArticles.slice(0, 5));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Background check for fresh articles failed:', err);
+      }
+    };
+    
+    // Check silently after a 1 second delay to prioritize initial page interaction
+    const timer = setTimeout(fetchLatest, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Compute Stats for Dashboard
   const totalCrawled = articles.length;
   const hotCount = articles.filter(a => a.hot_score >= 60).length;

@@ -170,30 +170,38 @@ async def crawl_now(request: CrawlRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def run_batch_render_subprocess(run_js_path: str, base_dir: str):
+    try:
+        result = subprocess.run(
+            ["node", run_js_path],
+            cwd=base_dir,
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            print(f"Error executing background batch rendering: {result.stderr}")
+        else:
+            print(f"Background batch rendering finished: {result.stdout.strip()}")
+    except Exception as e:
+        print(f"Failed to execute background batch rendering subprocess: {e}")
+
 @app.post("/api/articles/crawl-hot-now")
-async def crawl_hot_now():
+async def crawl_hot_now(background_tasks: BackgroundTasks):
     """
     Triggers an immediate scan of VietnamPlus homepage, runs ETL/NLP classification,
-    executes TS renderer for newly found hot articles, and returns the updated article feed.
+    schedules background TS rendering for newly found hot articles, and returns the updated article feed.
     """
     try:
         # 1. Run the ETL pipeline to pull the latest 20 articles from the homepage
         pipeline = ETLPipeline()
         pipeline.run(limit=20)
         
-        # 2. Trigger TS rendering subprocess for any unrendered hot articles
+        # 2. Schedule background TS rendering subprocess for any unrendered hot articles
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
         run_js_path = os.path.join(base_dir, "renderer", "dist", "run.js")
         
         if os.path.exists(run_js_path):
-            result = subprocess.run(
-                ["node", run_js_path],
-                cwd=base_dir,
-                capture_output=True,
-                text=True
-            )
-            if result.returncode != 0:
-                print(f"Error executing batch rendering: {result.stderr}")
+            background_tasks.add_task(run_batch_render_subprocess, run_js_path, base_dir)
         else:
             print(f"Renderer run script not found at: {run_js_path}")
             
