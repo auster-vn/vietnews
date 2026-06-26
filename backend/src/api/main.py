@@ -44,6 +44,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health_check():
+    """
+    Simple health check endpoint used to keep the Render service awake.
+    """
+    return {"status": "ok"}
+
 @app.get("/api/articles")
 async def get_articles(hot: bool = False, category: str = None, limit: int = 20):
     """

@@ -1,0 +1,21 @@
+name: Keep Alive Ping
+
+on:
+  schedule:
+    # Run every 10 minutes to keep the Render free tier backend awake
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Enable manual triggering of keep alive
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health
+        run: |
+          echo "Pinging backend health endpoint..."
+          curl -s -o /dev/null -w "%{http_code}" https://vietnews-d1dc.onrender.com/health | grep -q "200" || echo "Backend ping returned non-200 status code"
+
+      - name: Ping Frontend Website
+        run: |
+          echo "Pinging frontend site..."
+          curl -s -o /dev/null -w "%{http_code}" https://vietnews-seven.vercel.app/ | grep -q "200" || echo "Frontend ping returned non-200 status code"

@@ -171,3 +171,9 @@ def test_post_crawl_hot_now_success(client, mock_db, mocker):
     mock_pipeline.run.assert_called_once_with(limit=20)
     mock_sub.assert_called_once()
     mock_db.get_articles.assert_called_once_with(hot=False, category=None, limit=50)
+
+def test_health_check(client):
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
