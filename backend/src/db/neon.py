@@ -2,7 +2,7 @@ import os
 import psycopg2
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, Any, List, Optional
 
 class JSONDBClient:
@@ -133,6 +133,28 @@ class JSONDBClient:
             if item["source_url"] == url:
                 return item
         return None
+
+    def delete_old_articles(self, days: int = 3) -> int:
+        data = self._read()
+        now = datetime.now(timezone.utc)
+        retained = []
+        deleted_count = 0
+        for item in data:
+            pub_at_str = item.get("published_at", "")
+            try:
+                pub_at_clean = pub_at_str.replace("Z", "+00:00")
+                pub_at = datetime.fromisoformat(pub_at_clean)
+                delta = now - pub_at
+                if delta.total_seconds() <= days * 24 * 3600:
+                    retained.append(item)
+                else:
+                    deleted_count += 1
+            except Exception:
+                retained.append(item)
+        if deleted_count > 0:
+            self._write(retained)
+        return deleted_count
+
 
 
 class NeonDBClient:
@@ -374,3 +396,21 @@ class NeonDBClient:
         finally:
             cursor.close()
             conn.close()
+
+    def delete_old_articles(self, days: int = 3) -> int:
+        if self.local_client:
+            return self.local_client.delete_old_articles(days)
+            
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        try:
+            threshold = datetime.now(timezone.utc) - timedelta(days=days)
+            sql = "DELETE FROM articles WHERE published_at < %s;"
+            cursor.execute(sql, (threshold,))
+            deleted_count = cursor.rowcount
+            conn.commit()
+            return deleted_count
+        finally:
+            cursor.close()
+            conn.close()
+

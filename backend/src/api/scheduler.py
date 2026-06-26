@@ -3,6 +3,7 @@ import subprocess
 import os
 import logging
 from backend.src.etl.pipeline import ETLPipeline
+from backend.src.db.neon import NeonDBClient
 
 logger = logging.getLogger("scheduler")
 scheduler = BackgroundScheduler()
@@ -10,7 +11,12 @@ scheduler = BackgroundScheduler()
 def run_crawl_and_render():
     logger.info("Starting scheduled crawl and render job...")
     try:
-        # 1. Crawl and parse articles
+        # 1. Clean database by deleting articles older than 3 days
+        db_client = NeonDBClient()
+        deleted_count = db_client.delete_old_articles(days=3)
+        logger.info(f"Cleaned up {deleted_count} articles older than 3 days from database.")
+
+        # 2. Crawl and parse articles
         pipeline = ETLPipeline()
         new_count = pipeline.run(limit=20)
         logger.info(f"Pipeline finished. Processed {new_count} new articles.")
