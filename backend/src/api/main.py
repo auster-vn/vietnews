@@ -1,5 +1,6 @@
-from fastapi import FastAPI, HTTPException, Header, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Response, status, Query
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 import os
 import subprocess
 import httpx
@@ -65,19 +66,27 @@ async def get_banner():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/internal/crawl")
-async def trigger_crawl(background_tasks: BackgroundTasks, x_cron_token: str = Header(None, alias="X-Cron-Token")):
+@app.api_route("/internal/crawl", methods=["GET", "POST"], status_code=status.HTTP_204_NO_CONTENT)
+async def trigger_crawl(
+    background_tasks: BackgroundTasks,
+    x_cron_token: Optional[str] = Header(None, alias="X-Cron-Token"),
+    token: Optional[str] = Query(None),
+    secret: Optional[str] = Query(None)
+):
     """
     Trigger the Scraper + ETL + Renderer loop immediately in the background.
-    Protected by the X-Cron-Token header.
+    Protected by the X-Cron-Token header, token query parameter, or secret query parameter.
+    Returns 204 No Content to minimize response size.
     """
     cron_secret = os.getenv("INTERNAL_CRON_SECRET", "")
     
-    if not cron_secret or x_cron_token != cron_secret:
+    provided_token = x_cron_token or token or secret
+    
+    if not cron_secret or provided_token != cron_secret:
         raise HTTPException(status_code=401, detail="Unauthorized")
         
     background_tasks.add_task(run_crawl_and_render)
-    return {"status": "crawling"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 class CrawlRequest(BaseModel):
     url: str
