@@ -89,8 +89,20 @@ class JSONDBClient:
 
     def get_articles(self, hot: bool = False, category: str = None, limit: int = 20) -> List[Dict[str, Any]]:
         data = self._read()
+        now = datetime.now(timezone.utc)
         filtered = []
         for item in data:
+            pub_at_str = item.get("published_at", "")
+            try:
+                pub_at_clean = pub_at_str.replace("Z", "+00:00")
+                pub_at = datetime.fromisoformat(pub_at_clean)
+                delta = now - pub_at
+                # Automatically hide articles older than 3 days
+                if delta.total_seconds() > 3 * 24 * 3600:
+                    continue
+            except Exception:
+                pass
+
             if hot and item.get("hot_score", 0) < 60:
                 continue
             if category and item.get("category") != category:
@@ -248,7 +260,7 @@ class NeonDBClient:
         conn = self._get_connection()
         cursor = conn.cursor()
         try:
-            conditions = []
+            conditions = ["published_at >= NOW() - INTERVAL '3 days'"]
             params = []
             if hot:
                 conditions.append("hot_score >= 60")

@@ -361,51 +361,6 @@ export default function MainFeed({ initialArticles, initialBannerArticles }: Mai
     }
   };
 
-  const handleCleanup = async () => {
-    if (!window.confirm("Bạn có chắc chắn muốn xoá toàn bộ tin tức cũ hơn 3 ngày để làm nhẹ cơ sở dữ liệu?")) {
-      return;
-    }
-    setLoading(true);
-    setError('');
-    setSuccessMsg('');
-
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const res = await fetch(`${apiUrl}/api/articles/cleanup?days=3`, {
-        method: 'POST'
-      });
-
-      if (!res.ok) {
-        throw new Error('Dọn dẹp dữ liệu thất bại. Vui lòng thử lại sau.');
-      }
-
-      const result = await res.json();
-      const deletedCount = result.deleted_count || 0;
-
-      // Re-fetch articles to update the UI
-      const refreshRes = await fetch(`${apiUrl}/api/articles`);
-      if (refreshRes.ok) {
-        const updatedArticles = await refreshRes.json();
-        setArticles(updatedArticles);
-        if (updatedArticles.length > 0) {
-          // If the selected article was deleted, fallback to the first one
-          if (!updatedArticles.some((a: any) => a.id === selectedArticleId)) {
-            setSelectedArticleId(updatedArticles[0].id);
-          }
-        } else {
-          setSelectedArticleId(null);
-        }
-      }
-
-      setSuccessMsg(`Đã dọn dẹp thành công! Đã xoá ${deletedCount} tin tức cũ hơn 3 ngày.`);
-      setTimeout(() => setSuccessMsg(''), 5000);
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Có lỗi xảy ra khi dọn dẹp tin cũ.';
-      setError(errMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSwipeLeft = () => {
     if (filteredArticles.length <= 1) return;
@@ -574,14 +529,6 @@ export default function MainFeed({ initialArticles, initialBannerArticles }: Mai
             )}
           </button>
 
-          {/* Cleanup Button */}
-          <button
-            onClick={handleCleanup}
-            disabled={loading}
-            className="flex items-center justify-center gap-1.5 py-1.5 px-3.5 rounded-lg border border-white/10 hover:border-amber-500/30 bg-slate-900/60 hover:bg-slate-900 text-white font-bold text-[10px] uppercase tracking-wider transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex-grow sm:flex-grow-0"
-          >
-            <span className="text-amber-500">Dọn tin cũ 🧹</span>
-          </button>
         </div>
       </header>
 

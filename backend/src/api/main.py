@@ -23,6 +23,13 @@ db_client = NeonDBClient()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Automatically clean up database by deleting articles older than 3 days on startup
+    try:
+        deleted_count = db_client.delete_old_articles(days=3)
+        print(f"Startup database cleanup: deleted {deleted_count} articles older than 3 days.")
+    except Exception as e:
+        print(f"Error doing database cleanup on startup: {e}")
+
     # Initialize background scheduler on startup
     start_scheduler()
     yield
