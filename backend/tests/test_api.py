@@ -88,8 +88,8 @@ def test_post_internal_crawl_unauthorized(client, mock_run_crawl, mocker):
 def test_post_internal_crawl_authorized(client, mock_run_crawl, mocker):
     mocker.patch("os.getenv", return_value="super-secret")
     response = client.post("/internal/crawl", headers={"X-Cron-Token": "super-secret"})
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
     # Verify that run_crawl_and_render was scheduled as a background task
     mock_run_crawl.assert_called_once()
 
@@ -97,24 +97,24 @@ def test_get_internal_crawl_authorized_token(client, mock_run_crawl, mocker):
     mock_run_crawl.reset_mock()
     mocker.patch("os.getenv", return_value="super-secret")
     response = client.get("/internal/crawl?token=super-secret")
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
     mock_run_crawl.assert_called_once()
 
 def test_get_internal_crawl_authorized_secret(client, mock_run_crawl, mocker):
     mock_run_crawl.reset_mock()
     mocker.patch("os.getenv", return_value="super-secret")
     response = client.get("/internal/crawl?secret=super-secret")
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
     mock_run_crawl.assert_called_once()
 
 def test_get_internal_crawl_authorized_header(client, mock_run_crawl, mocker):
     mock_run_crawl.reset_mock()
     mocker.patch("os.getenv", return_value="super-secret")
     response = client.get("/internal/crawl", headers={"X-Cron-Token": "super-secret"})
-    assert response.status_code == 204
-    assert response.content == b""
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
     mock_run_crawl.assert_called_once()
 
 def test_get_internal_crawl_unauthorized(client, mock_run_crawl, mocker):

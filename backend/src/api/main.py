@@ -74,7 +74,7 @@ async def get_banner():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.api_route("/internal/crawl", methods=["GET", "POST"], status_code=status.HTTP_204_NO_CONTENT)
+@app.api_route("/internal/crawl", methods=["GET", "POST"])
 async def trigger_crawl(
     x_cron_token: Optional[str] = Header(None, alias="X-Cron-Token"),
     token: Optional[str] = Query(None),
@@ -83,7 +83,7 @@ async def trigger_crawl(
     """
     Trigger the Scraper + ETL + Renderer loop in a daemon thread.
     Protected by the X-Cron-Token header, token query parameter, or secret query parameter.
-    Returns 204 No Content immediately so cron-job.org never times out.
+    Returns 200 OK immediately with {"status": "ok"} so cron-job.org never times out.
     """
     cron_secret = os.getenv("INTERNAL_CRON_SECRET", "")
     
@@ -92,13 +92,13 @@ async def trigger_crawl(
     if not cron_secret or provided_token != cron_secret:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    # Fire-and-forget: spawn a daemon thread so the 204 response is sent
+    # Fire-and-forget: spawn a daemon thread so the 200 response is sent
     # immediately without waiting for the crawl (which takes ~60 seconds).
     # Using BackgroundTasks held the Uvicorn connection open until completion,
     # causing cron-job.org to time out and receive an error response.
     thread = threading.Thread(target=run_crawl_and_render, daemon=True)
     thread.start()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return {"status": "ok"}
 
 class CrawlRequest(BaseModel):
     url: str
