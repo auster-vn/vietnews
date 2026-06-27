@@ -2,7 +2,44 @@ import pytest
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 
+import threading
+
 # Mock the database client and background task functions
+@pytest.fixture(autouse=True)
+def mock_thread(mocker):
+    # Mock threading.Thread to run only crawler targets synchronously to avoid race conditions
+    original_init = threading.Thread.__init__
+    original_start = threading.Thread.start
+    
+    def mock_init(self, *args, **kwargs):
+        original_init(self, *args, **kwargs)
+    
+    def mock_start(self):
+        target = getattr(self, "_target", None)
+        # Safely get target name (avoiding AttributeError on MagicMock)
+        target_name = None
+        if target is not None:
+            try:
+                target_name = getattr(target, "__name__", None)
+            except Exception:
+                pass
+        
+        is_our_target = False
+        if target_name in ("run_crawl_and_render", "run_batch_render_subprocess"):
+            is_our_target = True
+        elif isinstance(target, MagicMock) or (target is not None and "Mock" in type(target).__name__):
+            is_our_target = True
+            
+        if is_our_target:
+            args = getattr(self, "_args", ())
+            kwargs = getattr(self, "_kwargs", {})
+            target(*args, **kwargs)
+        else:
+            original_start(self)
+            
+    mocker.patch("threading.Thread.__init__", mock_init)
+    mocker.patch("threading.Thread.start", mock_start)
+
 @pytest.fixture
 def mock_db(mocker):
     db_mock = MagicMock()

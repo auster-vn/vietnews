@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Response, status, Query
+from fastapi import FastAPI, HTTPException, Header, Response, status, Query
+import threading
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import os
@@ -75,15 +76,14 @@ async def get_banner():
 
 @app.api_route("/internal/crawl", methods=["GET", "POST"], status_code=status.HTTP_204_NO_CONTENT)
 async def trigger_crawl(
-    background_tasks: BackgroundTasks,
     x_cron_token: Optional[str] = Header(None, alias="X-Cron-Token"),
     token: Optional[str] = Query(None),
     secret: Optional[str] = Query(None)
 ):
     """
-    Trigger the Scraper + ETL + Renderer loop immediately in the background.
+    Trigger the Scraper + ETL + Renderer loop in a daemon thread.
     Protected by the X-Cron-Token header, token query parameter, or secret query parameter.
-    Returns 204 No Content to minimize response size.
+    Returns 204 No Content immediately so cron-job.org never times out.
     """
     cron_secret = os.getenv("INTERNAL_CRON_SECRET", "")
     
@@ -91,8 +91,13 @@ async def trigger_crawl(
     
     if not cron_secret or provided_token != cron_secret:
         raise HTTPException(status_code=401, detail="Unauthorized")
-        
-    background_tasks.add_task(run_crawl_and_render)
+
+    # Fire-and-forget: spawn a daemon thread so the 204 response is sent
+    # immediately without waiting for the crawl (which takes ~60 seconds).
+    # Using BackgroundTasks held the Uvicorn connection open until completion,
+    # causing cron-job.org to time out and receive an error response.
+    thread = threading.Thread(target=run_crawl_and_render, daemon=True)
+    thread.start()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 class CrawlRequest(BaseModel):
@@ -193,7 +198,7 @@ def run_batch_render_subprocess(run_js_path: str, base_dir: str):
         print(f"Failed to execute background batch rendering subprocess: {e}")
 
 @app.post("/api/articles/crawl-hot-now")
-async def crawl_hot_now(background_tasks: BackgroundTasks):
+async def crawl_hot_now():
     """
     Triggers an immediate scan of VietnamPlus homepage, runs ETL/NLP classification,
     schedules background TS rendering for newly found hot articles, and returns the updated article feed.
@@ -208,7 +213,12 @@ async def crawl_hot_now(background_tasks: BackgroundTasks):
         run_js_path = os.path.join(base_dir, "renderer", "dist", "run.js")
         
         if os.path.exists(run_js_path):
-            background_tasks.add_task(run_batch_render_subprocess, run_js_path, base_dir)
+            thread = threading.Thread(
+                target=run_batch_render_subprocess,
+                args=(run_js_path, base_dir),
+                daemon=True
+            )
+            thread.start()
         else:
             print(f"Renderer run script not found at: {run_js_path}")
             
@@ -218,3 +228,4 @@ async def crawl_hot_now(background_tasks: BackgroundTasks):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
