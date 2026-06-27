@@ -214,3 +214,15 @@ def test_health_check(client):
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
+def test_post_cleanup_success(client, mock_db):
+    mock_db.delete_old_articles.return_value = 5
+    response = client.post("/api/articles/cleanup?days=5")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "deleted_count": 5}
+    mock_db.delete_old_articles.assert_called_once_with(days=5)
+
+def test_post_cleanup_invalid_days(client):
+    response = client.post("/api/articles/cleanup?days=0")
+    assert response.status_code == 422
+
+

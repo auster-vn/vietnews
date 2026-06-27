@@ -229,3 +229,14 @@ async def crawl_hot_now():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/api/articles/cleanup")
+async def cleanup_old_articles(days: int = Query(3, ge=1)):
+    """
+    Manually triggers database cleanup to delete articles older than X days.
+    """
+    try:
+        deleted_count = db_client.delete_old_articles(days=days)
+        return {"status": "ok", "deleted_count": deleted_count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
